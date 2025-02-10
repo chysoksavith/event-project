@@ -12,17 +12,17 @@ class Event extends Model
     protected $table = 'events';
     protected $fillable = [
         'title',
-        'slug',
-        'description',
+        'country_id',
+        'city_id',
+        'address',
         'start_date',
         'end_date',
         'start_time',
-        'image',
-        'address',
         'num_tickets',
+        'description',
+        'image',
         'user_id',
-        'country_id',
-        'city_id'
+        'slug'
     ];
     public function user(): BelongsTo
     {

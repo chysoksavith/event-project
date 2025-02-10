@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Country;
 use Illuminate\Http\Request;
 
-class GalleryController extends Controller
+class CountryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('galleries.index');
+        return view('country.index');
     }
 
     /**
@@ -19,7 +20,7 @@ class GalleryController extends Controller
      */
     public function create()
     {
-        return view('galleries.create');
+        return view('country.create');
     }
 
     /**
@@ -27,7 +28,11 @@ class GalleryController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->all());
+        $validate = $request->validate([
+            'name' => 'required'
+        ]);
+        Country::create($validate);
+        return to_route('countries.index');
     }
 
     /**

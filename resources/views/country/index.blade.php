@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Galleries') }}
+                {{ __('Country') }}
             </h2>
             <div>
-                <a href="{{ route('galleries.create') }}" class="">New Gallery</a>
+                <a href="{{ route('countries.create') }}" class="">New Country</a>
             </div>
         </div>
     </x-slot>
