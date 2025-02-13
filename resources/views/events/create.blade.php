@@ -14,20 +14,9 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <form method="POST" action="{{ route('eventss.store') }}" x-data="{
-                        country: null,
-                        city: null,
-                        cities: [],
-                        onCountryChange(event) {
-                            axios.get(`/countries/${event.target.value}`).then(res => {
-                                this.cities = res.data
-                            })
-
-                        }
-                    }"
-                        enctype="multipart/form-data" class="p-4  rounded-md">
+                    <form method="POST" action="{{ route('eventss.store') }}" enctype="multipart/form-data"
+                        class="p-4 rounded-md">
                         @csrf
-
                         {{-- title --}}
                         <div class="grid gap-2 mb-6 md:grid-cols-2">
                             <label for="title" class="block g-md-2 text-sm font-medium">Title</label>
@@ -60,15 +49,16 @@
                         {{-- city --}}
                         <div class="grid gap-2 mb-6 md:grid-cols-2">
                             <label for="city_id" class="block g-md-2 text-sm font-medium">City</label>
-                            <select id="city_id" name="city_id" x-model="city"
+                            <select id="city_id" name="city_id"
                                 class="border border-gray-300 text-sm text-gray-900 rounded-lg focus:ring-blue-400">
                                 <option value="">Choose a City</option>
-                                <template x-for="city in cities" :key="city.id">
-                                    <option :value="city.id"
-                                        :selected="city.id === {{ old('city_id') }} ? true : false" x-text="city.name">
+                                @foreach ($cities as $city)
+                                    <option value="{{ $city->id }}" @selected(old('city_id') == $city->id)>
+                                        {{ $city->name }}
                                     </option>
-                                </template>
+                                @endforeach
                             </select>
+
                             @error('city_id')
                                 <div class="text-sm text-red-500">{{ $message }}</div>
                             @enderror
@@ -152,16 +142,20 @@
                             <h3 class="mb-4 font-semibold">Tags</h3>
                             <ul class="item-center w-full text-sm font-medium border border-gray-300 rounded-lg">
                                 @foreach ($tags as $tag)
-                                <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
-                                    <div class="flex items-center pl-3">
-                                        <input type="checkbox" id="vue-check-list" name="tags[]" value="{{$tag->id}}" class="">
-                                        <label for="vue-check-list" class="w-full py-3 ml-2 text-sm font-medium">{{$tag->name}}</label>
-                                    </div>
-                                </li>
+                                    <li
+                                        class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                        <div class="flex items-center pl-3">
+                                            <input type="checkbox" id="vue-check-list" name="tags[]"
+                                                value="{{ $tag->id }}" class="">
+                                            <label for="vue-check-list"
+                                                class="w-full py-3 ml-2 text-sm font-medium">{{ $tag->name }}</label>
+                                        </div>
+                                    </li>
                                 @endforeach
                             </ul>
                         </div>
-                        <button type="submit" class="bg-blue-500  px-4 py-2 rounded">Save Event</button>
+                        <button type="submit" class="bg-blue-500 text-white mt-4 px-4 py-2 rounded">Save
+                            Event</button>
                     </form>
                 </div>
             </div>

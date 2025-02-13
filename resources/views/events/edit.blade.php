@@ -14,17 +14,8 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <form method="POST" action="{{ route('eventss.update', $event) }}" x-data="{
-                        country: null,
-                        city: @js($event->city_id),
-                        cities: @js($event->country->cities),
-                        onCountryChange(event) {
-                            axios.get(`/countries/${event.target.value}`).then(res => {
-                                this.cities = res.data
-                            })
-                        }
-                    }"
-                        enctype="multipart/form-data" class="p-4 rounded-md">
+                    <form method="POST" action="{{ route('eventss.update', $event) }}" enctype="multipart/form-data"
+                        class="p-4 rounded-md">
                         @csrf
                         @method('PUT')
                         {{-- title --}}
@@ -59,15 +50,16 @@
                         {{-- city --}}
                         <div class="grid gap-2 mb-6 md:grid-cols-2">
                             <label for="city_id" class="block g-md-2 text-sm font-medium">City</label>
-                            <select id="city_id" name="city_id" x-model="city"
+                            <select id="city_id" name="city_id"
                                 class="border border-gray-300 text-sm text-gray-900 rounded-lg focus:ring-blue-400">
                                 <option value="">Choose a City</option>
-                                <template x-for="city in cities" :key="city.id">
-                                    <option x-bind:value="city.id" x-text="city.name"
-                                        :selected="city.id === cityId">
+                                @foreach ($cities as $city)
+                                    <option value="{{ $city->id }}" @selected(old('city_id', $event->city_id) == $city->id)>
+                                        {{ $city->name }}
                                     </option>
-                                </template>
+                                @endforeach
                             </select>
+
                             @error('city_id')
                                 <div class="text-sm text-red-500">{{ $message }}</div>
                             @enderror
@@ -175,7 +167,8 @@
                                 @endforeach
                             </ul>
                         </div>
-                        <button type="submit" class="bg-blue-500  px-4 py-2 rounded">Update Event</button>
+                        <button type="submit" class="bg-blue-500 text-white mt-4  px-4 py-2 rounded">Update
+                            Event</button>
                     </form>
                 </div>
             </div>

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\CreateEventRequest;
 use App\Http\Requests\updateEventRequest;
+use App\Models\City;
 use Illuminate\Http\RedirectResponse;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Strong;
 
@@ -34,8 +35,9 @@ class EventController extends Controller
     public function create()
     {
         $countries = Country::all();
+        $cities = City::all();
         $tags = Tag::all();
-        return view('events.create', compact('countries', 'tags'));
+        return view('events.create', compact('countries','cities', 'tags'));
     }
 
     /**
@@ -113,9 +115,10 @@ class EventController extends Controller
     {
 
         $countries = Country::all();
+        $cities = City::all();
         $tags = Tag::all();
         $event = Event::findOrFail($id);
-        return view('events.edit', compact('countries', 'tags', 'event'));
+        return view('events.edit', compact('countries', 'cities', 'tags', 'event'));
     }
 
     /**
@@ -124,8 +127,10 @@ class EventController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateEventRequest $request, Event $event)
+    public function update(UpdateEventRequest $request, $id)
     {
+
+        $event = Event::findOrFail($id);
         // Validate request data
         $data = $request->validated();
 

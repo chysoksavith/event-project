@@ -26,8 +26,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('/countries', CountryController::class);
 
     Route::get('/countries/{country}', function (Country $country) {
-        return response()->json($country->country);
+        return response()->json($country->cities);
     });
+
 });
 
 require __DIR__ . '/auth.php';
