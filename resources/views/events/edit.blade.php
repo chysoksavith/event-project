@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('New Event') }}
+                {{ __('Edit Event') }}
             </h2>
             <div>
                 <a href="{{ route('eventss.index') }}" class="">Back Event</a>
@@ -14,26 +14,25 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <form method="POST" action="{{ route('eventss.store') }}" x-data="{
+                    <form method="POST" action="{{ route('eventss.update', $event) }}" x-data="{
                         country: null,
-                        city: null,
-                        cities: [],
+                        city: @js($event->city_id),
+                        cities: @js($event->country->cities),
                         onCountryChange(event) {
                             axios.get(`/countries/${event.target.value}`).then(res => {
                                 this.cities = res.data
                             })
-
                         }
                     }"
-                        enctype="multipart/form-data" class="p-4  rounded-md">
+                        enctype="multipart/form-data" class="p-4 rounded-md">
                         @csrf
-
+                        @method('PUT')
                         {{-- title --}}
                         <div class="grid gap-2 mb-6 md:grid-cols-2">
                             <label for="title" class="block g-md-2 text-sm font-medium">Title</label>
                             <input type="text" id="title" name="title"
                                 class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500"
-                                placeholder="Event title" value="{{ old('title') }}">
+                                value="{{ old('title', $event->title) }}">
                             @error('title')
                                 <div class="text-sm text-red-500">{{ $message }}</div>
                             @enderror
@@ -42,12 +41,12 @@
                         {{-- country --}}
                         <div class="grid gap-2 mb-6 md:grid-cols-2">
                             <label for="country_id" class="block g-md-2 text-sm font-medium">Country</label>
-                            <select id="country_id" name="country_id" x-model="country" x-on:change="onCountryChange"
+                            <select id="country_id" name="country_id" x-on:change="onCountryChange"
                                 class="border border-gray-300 text-sm text-gray-900 rounded-lg focus:ring-blue-400">
                                 <option value="">Choose a Country</option>
+
                                 @foreach ($countries as $country)
-                                    <option value="{{ $country->id }}"
-                                        {{ old('country_id') == $country->id ? 'selected' : '' }}>
+                                    <option value="{{ $country->id }}" @selected($country->id === $event->country_id)>
                                         {{ $country->name }}
                                     </option>
                                 @endforeach
@@ -64,8 +63,8 @@
                                 class="border border-gray-300 text-sm text-gray-900 rounded-lg focus:ring-blue-400">
                                 <option value="">Choose a City</option>
                                 <template x-for="city in cities" :key="city.id">
-                                    <option :value="city.id"
-                                        :selected="city.id === {{ old('city_id') }} ? true : false" x-text="city.name">
+                                    <option x-bind:value="city.id" x-text="city.name"
+                                        :selected="city.id === cityId">
                                     </option>
                                 </template>
                             </select>
@@ -77,17 +76,29 @@
                         <div class="grid gap-2 mb-6 md:grid-cols-2">
                             <label for="image" class="text-sm font-medium">Upload Image</label>
                             <input type="file" id="image" name="image">
+
                             @error('image')
                                 <div class="text-sm text-red-500">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        {{-- Show the old image below the input if it exists --}}
+                        <div class="mt-4  mb-6">
+                            <p class="text-sm text-gray-500">Current Image:</p>
+                            <img src="{{ !empty($event->image) && Storage::disk('public')->exists($event->image)
+                                ? asset('storage/' . $event->image)
+                                : 'https://placehold.co/600x400' }}"
+                                alt="Event Image" class="w-20 h-20 object-cover mt-2 rounded-lg shadow-md">
+                        </div>
+
+
 
                         {{-- address --}}
                         <div class="grid gap-2 mb-6 md:grid-cols-2">
                             <label for="address" class="block g-md-2 text-sm font-medium">Address</label>
                             <input type="text" id="address" name="address"
                                 class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500"
-                                placeholder="Event address" value="{{ old('address') }}">
+                                value="{{ old('address', $event->address) }}">
                             @error('address')
                                 <div class="text-sm text-red-500">{{ $message }}</div>
                             @enderror
@@ -98,7 +109,7 @@
                             <label for="start_date" class="text-sm font-medium">Start Date</label>
                             <input type="date" id="start_date" name="start_date"
                                 class="w-full text-sm border border-gray-300 rounded-lg cursor-pointer"
-                                value="{{ old('start_date') }}">
+                                value="{{ old('start_date', $event->start_date) }}">
                             @error('start_date')
                                 <div class="text-sm text-red-500">{{ $message }}</div>
                             @enderror
@@ -109,7 +120,7 @@
                             <label for="end_date" class="text-sm font-medium">End Date</label>
                             <input type="date" id="end_date" name="end_date"
                                 class="w-full text-sm border border-gray-300 rounded-lg cursor-pointer"
-                                value="{{ old('end_date') }}">
+                                value="{{ old('end_date', $event->end_date) }}">
                             @error('end_date')
                                 <div class="text-sm text-red-500">{{ $message }}</div>
                             @enderror
@@ -120,7 +131,7 @@
                             <label for="start_time" class="text-sm font-medium">Start Time</label>
                             <input type="time" id="start_time" name="start_time"
                                 class="w-full text-sm border border-gray-300 rounded-lg cursor-pointer"
-                                value="{{ old('start_time') }}">
+                                value="{{ old('start_time', $event->start_time) }}">
                             @error('start_time')
                                 <div class="text-sm text-red-500">{{ $message }}</div>
                             @enderror
@@ -131,7 +142,7 @@
                             <label for="num_tickets" class="text-sm font-medium">Tickets Number</label>
                             <input type="number" id="num_tickets" name="num_tickets"
                                 class="w-full text-sm border border-gray-300 rounded-lg cursor-pointer"
-                                value="{{ old('num_tickets') }}">
+                                value="{{ old('num_tickets', $event->num_tickets) }}">
                             @error('num_tickets')
                                 <div class="text-sm text-red-500">{{ $message }}</div>
                             @enderror
@@ -141,7 +152,7 @@
                         <div class="grid gap-2 mb-6 md:grid-cols-2">
                             <label for="description" class="text-sm font-medium">Description</label>
                             <textarea name="description" id="description"
-                                class="block p-2 w-full text-sm rounded-lg border border-gray-300 focus:ring-blue-500" rows="4">{{ old('description') }}</textarea>
+                                class="block p-2 w-full text-sm rounded-lg border border-gray-300 focus:ring-blue-500" rows="4">{{ old('description', $event->description) }}</textarea>
                             @error('description')
                                 <div class="text-sm text-red-500">{{ $message }}</div>
                             @enderror
@@ -152,16 +163,19 @@
                             <h3 class="mb-4 font-semibold">Tags</h3>
                             <ul class="item-center w-full text-sm font-medium border border-gray-300 rounded-lg">
                                 @foreach ($tags as $tag)
-                                <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
-                                    <div class="flex items-center pl-3">
-                                        <input type="checkbox" id="vue-check-list" name="tags[]" value="{{$tag->id}}" class="">
-                                        <label for="vue-check-list" class="w-full py-3 ml-2 text-sm font-medium">{{$tag->name}}</label>
-                                    </div>
-                                </li>
+                                    <li
+                                        class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                        <div class="flex items-center pl-3">
+                                            <input type="checkbox" id="vue-check-list" name="tags[]"
+                                                value="{{ $tag->id }}" @checked($event->hasTag($tag))>
+                                            <label for="vue-check-list"
+                                                class="w-full py-3 ml-2 text-sm font-medium">{{ $tag->name }}</label>
+                                        </div>
+                                    </li>
                                 @endforeach
                             </ul>
                         </div>
-                        <button type="submit" class="bg-blue-500  px-4 py-2 rounded">Save Event</button>
+                        <button type="submit" class="bg-blue-500  px-4 py-2 rounded">Update Event</button>
                     </form>
                 </div>
             </div>

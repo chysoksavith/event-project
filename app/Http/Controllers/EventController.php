@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tag;
 use App\Models\Event;
 use App\Models\Country;
+use Illuminate\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -11,6 +13,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\CreateEventRequest;
+use App\Http\Requests\updateEventRequest;
+use Illuminate\Http\RedirectResponse;
+use League\CommonMark\Extension\CommonMark\Node\Inline\Strong;
 
 class EventController extends Controller
 {
@@ -19,7 +24,8 @@ class EventController extends Controller
      */
     public function index()
     {
-        return view('events.index');
+        $events = Event::with('country')->orderBy('created_at', 'desc')->paginate(15);
+        return view('events.index', compact('events'));
     }
 
     /**
@@ -28,7 +34,8 @@ class EventController extends Controller
     public function create()
     {
         $countries = Country::all();
-        return view('events.create', compact('countries'));
+        $tags = Tag::all();
+        return view('events.create', compact('countries', 'tags'));
     }
 
     /**
@@ -74,12 +81,19 @@ class EventController extends Controller
             return back()->withErrors(['slug' => 'Slug already exists. Try a different title.'])->withInput();
         }
 
-        // Create event without try-catch
-        if (Event::create($data)) {
-            return redirect()->route('eventss.index')->with('success', 'Record created Successfully');
+        try {
+            // Create event
+            $event = Event::create($data);
+            // Attach tags if present
+            if ($request->has('tags')) {
+                $event->tags()->attach($request->tags);
+            }
+            return redirect()->route('eventss.index')->with('success', 'Event created successfully');
+        } catch (\Exception $e) {
+            // Handle exception if necessary
+            Log::error('Error creating event: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['error' => 'Failed to create event. Please try again.']);
         }
-
-        return back()->withErrors(['error' => 'An error occurred while saving the event.'])->withInput();
     }
 
 
@@ -95,24 +109,93 @@ class EventController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id): View
     {
-        //
+
+        $countries = Country::all();
+        $tags = Tag::all();
+        $event = Event::findOrFail($id);
+        return view('events.edit', compact('countries', 'tags', 'event'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdateEventRequest $request, Event $event)
     {
-        //
+        // Validate request data
+        $data = $request->validated();
+
+        // Debugging
+        Log::info('Request Data for Update: ', $data);
+
+        // 🔹 Validate and format dates
+        $startDate = Carbon::parse($request->start_date)->format('Y-m-d');
+        $endDate = Carbon::parse($request->end_date)->format('Y-m-d');
+
+        // Validate the date ranges manually (if outside reasonable limits)
+        if ($startDate < '2000-01-01' || $startDate > '2100-12-31') {
+            return back()->withErrors(['start_date' => 'Start date is out of allowed range.'])->withInput();
+        }
+
+        if ($endDate < '2000-01-01' || $endDate > '2100-12-31') {
+            return back()->withErrors(['end_date' => 'End date is out of allowed range.'])->withInput();
+        }
+
+        // Assign formatted dates to data array
+        $data['start_date'] = $startDate;
+        $data['end_date'] = $endDate;
+
+        // Handle image upload (if present)
+        if ($request->hasFile('image')) {
+            Log::info('Image uploaded: ', [$request->file('image')->getClientOriginalName()]);
+
+            // Delete the old image if it exists
+            if ($event->image) {
+                Log::info('Deleting old image: ' . $event->image);
+                Storage::disk('public')->delete($event->image);
+            }
+
+            // Store new image
+            $data['image'] = Storage::disk('public')->putFile('events', $request->file('image'));
+            Log::info('New image stored: ' . $data['image']);
+        }
+
+
+        // Ensure the slug is unique, even if the title is the same
+        $data['slug'] = Str::slug($request->title);
+
+        // Check if slug exists and is not the current event's slug
+        if (Event::where('slug', $data['slug'])->where('id', '!=', $event->id)->exists()) {
+            return back()->withErrors(['slug' => 'Slug already exists. Try a different title.'])->withInput();
+        }
+
+        try {
+            // Update the event
+            $event->update($data);
+
+            // Update tags if present
+            $event->tags()->sync($request->tags);
+            return redirect()->route('eventss.index')->with('success', 'Event updated successfully');
+        } catch (\Exception $e) {
+            // Handle exception if necessary
+            Log::error('Error updating event: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['error' => 'Failed to update event. Please try again.']);
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Event $event): RedirectResponse
     {
-        //
+        Storage::delete($event->image);
+        $event->tags()->detach();
+        $event->delete();
+        return redirect()->back();
     }
 }
