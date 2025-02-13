@@ -10,13 +10,14 @@
             </div>
         </div>
     </x-slot>
-    <div>
-        @include('_message')
 
-    </div>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    @include('_message')
+
+                </div>
                 <div class="p-6 text-gray-900">
 
 
@@ -51,9 +52,8 @@
                                                     @method('DELETE')
                                                     <button type="button"
                                                         class="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm"
-                                                        onclick="return confirm('Are you sure you want to delete?') ? this.closest('form').submit() : null;">
-                                                        Delete
-                                                    </button>
+                                                        onclick="return confirm('Are you sure you want to delete the event with Title: {{ $event->title }}?') ? this.closest('form').submit() : null;">
+                                                        Delete </button>
                                                 </form>
 
                                             </div>

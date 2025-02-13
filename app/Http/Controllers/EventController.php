@@ -191,11 +191,23 @@ class EventController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Event $event): RedirectResponse
+    public function destroy($id)
     {
-        Storage::delete($event->image);
+        // Manually find the event
+        $event = Event::findOrFail($id);
+
+
+        // Check if the image exists in the storage
+        if ($event->image && Storage::disk('public')->exists($event->image)) {
+            // Delete the image
+            Storage::disk('public')->delete($event->image);
+        }
+
+        // Detach tags and delete the event
         $event->tags()->detach();
         $event->delete();
-        return redirect()->back();
+
+        // Redirect back with success message
+        return redirect()->back()->with('success', 'Record deleted successfully');
     }
 }
