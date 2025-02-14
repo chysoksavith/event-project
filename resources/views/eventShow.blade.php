@@ -1,7 +1,20 @@
 <x-main-layout>
     <!-- component -->
     <section>
+        <div class="flex justify-between align-items-center">
+            <div class="">
+                <span class="text-title">
+                    {{ $event->title }}
+                </span>
+            </div>
+            <div class="">
+                Start : &nbsp; <span
+                    class="text-normal">{{ \Carbon\Carbon::parse($event->start_date)->format('m/d/Y') }}</span> |
+                <span class="text-normal">{{ \Carbon\Carbon::parse($event->end_date)->format('m/d/Y') }}</span>
+            </div>
+        </div>
         <div class="container-page">
+
             <div class="left-container">
                 <div class="image-container">
                     <img class="image-event" src="{{ asset('/storage/' . $event->image) }}" alt="">
@@ -60,8 +73,8 @@
             </div>
             <div class="right-container">
                 <div class="mb-1">
-                    <span class="text-title">
-                        {{ $event->title }}
+                    <span class="text-normal">
+                        Start Time : {{ $event->start_time }}
                     </span>
                 </div>
                 <div class="mb-3">
@@ -101,7 +114,7 @@
 
                             <!-- Comments List -->
                             <div class="space-y-4">
-                                @foreach ($event->comments as $comment)
+                                @foreach ($event->comments()->latest()->get() as $comment)
                                     <div class="bg-gray-100 p-5 rounded-lg shadow-sm  mb-3 ">
                                         <div class="flex justify-between items-center  p-5">
                                             <p class="font-semibold text-gray-700">{{ $comment->user->name }}</p>
