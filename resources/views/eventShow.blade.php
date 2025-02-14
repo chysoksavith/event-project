@@ -83,10 +83,41 @@
                 </div>
                 <div class="mb-3">
                     @auth
-                        <div class="container">
-                            <div class="input-wrapper">
-                                <input type="email" class="input-field" placeholder="Comment" />
-                                <button class="button" type="button">Save</button>
+                        <div class="container max-w-lg mx-auto bg-white p-4 rounded-lg shadow-md">
+                            <!-- Comment Input -->
+                            <div class="mb-4">
+                                <form action="{{ route('events.comment', $event->id) }}" method="POST"
+                                    class="flex items-center space-x-2">
+                                    @csrf
+                                    <input type="text" name="content"
+                                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Write a comment..." />
+                                    <button class="bg-blue-600  px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                                        type="submit">
+                                        Post
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Comments List -->
+                            <div class="space-y-4">
+                                @foreach ($event->comments as $comment)
+                                    <div class="bg-gray-100 p-5 rounded-lg shadow-sm  mb-3 ">
+                                        <div class="flex justify-between items-center  p-5">
+                                            <p class="font-semibold text-gray-700">{{ $comment->user->name }}</p>
+                                            @if (Auth::user()->id === $comment->user_id)
+                                                <form
+                                                    action="{{ route('events.comment.destroy', [$event->id, $comment->id]) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="text-red-500 hover:text-red-700 text-sm">Delete</button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                        <p class="text-gray-600 mt-1">{{ $comment->content }}</p>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
 
