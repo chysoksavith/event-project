@@ -8,9 +8,21 @@
                     @auth
                         <div class="container-btn" x-data="{
                             eventLike: @js($like),
+                            savedEvent: @js($savedEvent),
+                            attending: @js($attending),
                             onHandleLike() {
                                 axios.post(`/events-like/{{ $event->id }}`).then(res => {
                                     this.eventLike = res.data
+                                })
+                            },
+                            onHandleSaved() {
+                                axios.post(`/events-save/{{ $event->id }}`).then(res => {
+                                    this.savedEvent = res.data
+                                })
+                            },
+                            onHandleAttending() {
+                                axios.post(`/events-attending/{{ $event->id }}`).then(res => {
+                                    this.attending = res.data
                                 })
                             }
                         
@@ -19,10 +31,12 @@
                                 :class="eventLike ? 'text-blue-500' : 'text-white'">
                                 <i class="fas fa-thumbs-up"></i> Like
                             </button>
-                            <button class="btn-css">
+                            <button class="btn-css" type="button" @click="onHandleSaved"
+                                :class="savedEvent ? 'text-blue-500' : 'text-white'">
                                 <i class="fas fa-save"></i> Save
                             </button>
-                            <button class="btn-css">
+                            <button class="btn-css" @click="onHandleAttending"
+                                :class="attending ? 'text-blue-500' : 'text-white'">
                                 <i class="fas fa-calendar-check"></i> Attending
                             </button>
 

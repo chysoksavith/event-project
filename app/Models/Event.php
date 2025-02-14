@@ -24,7 +24,7 @@ class Event extends Model
         'user_id',
         'slug'
     ];
- 
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -56,5 +56,9 @@ class Event extends Model
     public function hasTag($tag)
     {
         return $this->tags->contains($tag);
+    }
+    public function savedEvents(): HasMany
+    {
+        return $this->hasMany(SavedEvent::class);
     }
 }

@@ -12,6 +12,9 @@ class EventShowController extends Controller
     {
         $event =  Event::findOrFail($id);
         $like = $event->likes()->where('user_id', Auth::id())->first();
-        return view('eventShow', compact('event', 'like'));
+        $savedEvent = $event->savedEvents()->where('user_id', Auth::id())->first();
+        $attending = $event->attendings()->where('user_id', Auth::id())->first();
+
+        return view('eventShow', compact('event', 'savedEvent', 'attending', 'like'));
     }
 }
